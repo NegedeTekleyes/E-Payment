@@ -11,23 +11,23 @@ import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { COLORS } from "../../constants/colors";
 
-// Define a type for payment data
 type PaymentData = {
   month: string;
   paid: boolean;
-  amount: string; // store amount as string for input convenience
+  amount: string;
+  paidDate?: string; // ISO date string, e.g., "2026-01-15T10:30:00.000Z"
 };
 
 export default function CustomerDetail() {
   const { name, phone, account } = useLocalSearchParams();
   const router = useRouter();
 
-  // State for months with payment info (initially some paid months as example)
+  // Initial data with payment dates for demonstration
   const [payments, setPayments] = useState<PaymentData[]>([
-    { month: "Jan", paid: true, amount: "100" },
-    { month: "Feb", paid: true, amount: "100" },
-    { month: "Mar", paid: true, amount: "100" },
-    { month: "Apr", paid: true, amount: "100" },
+    { month: "Jan", paid: true, amount: "100", paidDate: "2026-01-15T10:00:00.000Z" },
+    { month: "Feb", paid: true, amount: "100", paidDate: "2026-02-18T09:30:00.000Z" },
+    { month: "Mar", paid: true, amount: "100", paidDate: "2026-03-20T14:15:00.000Z" },
+    { month: "Apr", paid: true, amount: "100", paidDate: "2026-04-10T11:45:00.000Z" },
     { month: "May", paid: false, amount: "" },
     { month: "Jun", paid: false, amount: "" },
     { month: "Jul", paid: false, amount: "" },
@@ -38,10 +38,20 @@ export default function CustomerDetail() {
     { month: "Dec", paid: false, amount: "" },
   ]);
 
-  // Modal state
   const [modalVisible, setModalVisible] = useState(false);
   const [editingMonth, setEditingMonth] = useState<PaymentData | null>(null);
   const [amountInput, setAmountInput] = useState("");
+
+  // Helper to format date nicely
+  const formatPaymentDate = (dateString?: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   const openPaymentModal = (monthData: PaymentData) => {
     setEditingMonth(monthData);
@@ -49,34 +59,13 @@ export default function CustomerDetail() {
     setModalVisible(true);
   };
 
-  const handlePaymentAction = () => {
-    if (!editingMonth) return;
-
-    const updatedPayments = payments.map((p) => {
-      if (p.month === editingMonth.month) {
-        // If it was unpaid, mark as paid with amount
-        // If it was paid, we either mark unpaid or update amount based on user choice
-        // Since we have two actions (Mark Unpaid / Update Amount), we need to differentiate.
-        // For simplicity, we'll provide two buttons in the modal: "Mark Unpaid" and "Save Amount".
-        // But the requirement says "edit the paid button make it unpaid or edit the amount using same structure".
-        // So we'll implement two separate actions inside the modal.
-        // We'll handle this by passing an action type. For now, we'll assume the user either clicks "Mark Unpaid" or "Save".
-        // But the confirmPayment function is called from a single button. Let's redesign modal to have two action buttons.
-        // I'll change the modal content below.
-      }
-      return p;
-    });
-    // Not used directly; we'll handle in modal buttons.
-    setModalVisible(false);
-  };
-
-  // Mark a paid month as unpaid
+  // Mark as unpaid: clear amount and paidDate
   const markAsUnpaid = () => {
     if (!editingMonth) return;
     setPayments((prev) =>
       prev.map((p) =>
         p.month === editingMonth.month
-          ? { ...p, paid: false, amount: "" }
+          ? { ...p, paid: false, amount: "", paidDate: undefined }
           : p
       )
     );
@@ -85,7 +74,7 @@ export default function CustomerDetail() {
     setAmountInput("");
   };
 
-  // Update amount (keeps paid status)
+  // Update amount: keep existing paidDate (don't change)
   const updateAmount = () => {
     if (!editingMonth) return;
     if (!amountInput.trim()) {
@@ -95,7 +84,7 @@ export default function CustomerDetail() {
     setPayments((prev) =>
       prev.map((p) =>
         p.month === editingMonth.month
-          ? { ...p, amount: amountInput, paid: true }
+          ? { ...p, amount: amountInput, paid: true } // keep original paidDate
           : p
       )
     );
@@ -104,7 +93,7 @@ export default function CustomerDetail() {
     setAmountInput("");
   };
 
-  // For unpaid months: pay action (mark paid with amount)
+  // Pay for an unpaid month: set current date as paidDate
   const handlePay = (monthData: PaymentData) => {
     setEditingMonth(monthData);
     setAmountInput("");
@@ -117,10 +106,11 @@ export default function CustomerDetail() {
       alert("Please enter an amount");
       return;
     }
+    const now = new Date().toISOString();
     setPayments((prev) =>
       prev.map((p) =>
         p.month === editingMonth.month
-          ? { ...p, paid: true, amount: amountInput }
+          ? { ...p, paid: true, amount: amountInput, paidDate: now }
           : p
       )
     );
@@ -131,12 +121,10 @@ export default function CustomerDetail() {
 
   return (
     <View style={styles.container}>
-      {/* BACK BUTTON - fixed */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-        <Text style={styles.backText}>← Back</Text>
+        <Text style={styles.backArrow}>←</Text>
       </TouchableOpacity>
 
-      {/* CUSTOMER INFO - fixed */}
       <View style={styles.card}>
         <Text style={styles.name}>{name}</Text>
         <Text>{phone}</Text>
@@ -145,16 +133,17 @@ export default function CustomerDetail() {
 
       <Text style={styles.section}>Payment History</Text>
 
-      {/* ONLY MONTHS SCROLL */}
-      <ScrollView
-        style={styles.scrollArea}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
         {payments.map((item) => {
           const isPaid = item.paid;
           return (
             <View key={item.month} style={styles.paymentCard}>
-              <Text style={styles.monthText}>{item.month}</Text>
+              <View style={styles.leftSection}>
+                <Text style={styles.monthText}>{item.month}</Text>
+                {isPaid && item.paidDate && (
+                  <Text style={styles.dateText}>Paid: {formatPaymentDate(item.paidDate)}</Text>
+                )}
+              </View>
 
               <View style={styles.rightSection}>
                 {isPaid ? (
@@ -181,7 +170,6 @@ export default function CustomerDetail() {
         })}
       </ScrollView>
 
-      {/* UNIVERSAL MODAL for both paying and editing paid entries */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -201,12 +189,8 @@ export default function CustomerDetail() {
             />
 
             {editingMonth?.paid ? (
-              // For paid months: show both actions
               <>
-                <TouchableOpacity
-                  style={styles.confirmBtn}
-                  onPress={updateAmount}
-                >
+                <TouchableOpacity style={styles.confirmBtn} onPress={updateAmount}>
                   <Text style={styles.confirmText}>Update Amount</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -217,11 +201,7 @@ export default function CustomerDetail() {
                 </TouchableOpacity>
               </>
             ) : (
-              // For unpaid months: just confirm payment
-              <TouchableOpacity
-                style={styles.confirmBtn}
-                onPress={confirmPayment}
-              >
+              <TouchableOpacity style={styles.confirmBtn} onPress={confirmPayment}>
                 <Text style={styles.confirmText}>Confirm Payment</Text>
               </TouchableOpacity>
             )}
@@ -243,16 +223,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
     padding: 20,
-    
-    
   },
   backBtn: {
     marginBottom: 10,
     marginTop: 30,
   },
-  backText: {
+  backArrow: {
+    fontSize: 28,
     color: COLORS.primary,
-    fontSize: 16,
+    fontWeight: "600",
   },
   card: {
     backgroundColor: "#fff",
@@ -271,7 +250,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   scrollArea: {
-    flex: 1, // takes remaining space
+    flex: 1,
   },
   paymentCard: {
     padding: 15,
@@ -284,9 +263,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
   },
+  leftSection: {
+    flex: 1,
+  },
   monthText: {
     fontSize: 16,
     fontWeight: "500",
+  },
+  dateText: {
+    fontSize: 12,
+    color: "#6b7280",
+    marginTop: 4,
   },
   rightSection: {
     flexDirection: "row",
@@ -296,10 +283,6 @@ const styles = StyleSheet.create({
   amountText: {
     color: COLORS.primary,
     fontWeight: "600",
-  },
-  paid: {
-    color: "green",
-    fontWeight: "bold",
   },
   payBtn: {
     backgroundColor: COLORS.primary,
