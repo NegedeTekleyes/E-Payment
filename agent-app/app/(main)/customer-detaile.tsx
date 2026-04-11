@@ -13,7 +13,11 @@ import { COLORS } from "../../constants/colors";
 import { addPayments, getPayments } from "../../services/paymentService";
 
 export default function CustomerDetail() {
-  const { name, phone, account } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const name = params.name as string
+  const phone = params.phone as string
+  const account = params.account as string
+
   const router = useRouter();
 
   const months = [
@@ -21,7 +25,8 @@ export default function CustomerDetail() {
     "Jul","Aug","Sep","Oct","Nov","Dec"
   ];
 
-  const [paidMonths, setPaidMonths] = useState<{ [key: string]: any }>({});
+interface PaymentRecord { amount: number; }
+  const [paidMonths, setPaidMonths] = useState<Record<string, PaymentRecord>>({});
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [amount, setAmount] = useState("");
@@ -254,5 +259,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     fontWeight: "600",
+  },
+   cancelText: {
+    color: "#666",
+    textAlign: "center",
+    marginTop: 12,
+    fontWeight: "500",
   },
 });
