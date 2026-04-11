@@ -7,124 +7,61 @@ import {
   Modal,
   TextInput,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { COLORS } from "../../constants/colors";
-
-type PaymentData = {
-  month: string;
-  paid: boolean;
-  amount: string;
-  paidDate?: string; // ISO date string, e.g., "2026-01-15T10:30:00.000Z"
-};
+import { addPayments, getPayments } from "../../services/paymentService";
 
 export default function CustomerDetail() {
   const { name, phone, account } = useLocalSearchParams();
   const router = useRouter();
 
-  // Initial data with payment dates for demonstration
-  const [payments, setPayments] = useState<PaymentData[]>([
-    { month: "Jan", paid: true, amount: "100", paidDate: "2026-01-15T10:00:00.000Z" },
-    { month: "Feb", paid: true, amount: "100", paidDate: "2026-02-18T09:30:00.000Z" },
-    { month: "Mar", paid: true, amount: "100", paidDate: "2026-03-20T14:15:00.000Z" },
-    { month: "Apr", paid: true, amount: "100", paidDate: "2026-04-10T11:45:00.000Z" },
-    { month: "May", paid: false, amount: "" },
-    { month: "Jun", paid: false, amount: "" },
-    { month: "Jul", paid: false, amount: "" },
-    { month: "Aug", paid: false, amount: "" },
-    { month: "Sep", paid: false, amount: "" },
-    { month: "Oct", paid: false, amount: "" },
-    { month: "Nov", paid: false, amount: "" },
-    { month: "Dec", paid: false, amount: "" },
-  ]);
+  const months = [
+    "Jan","Feb","Mar","Apr","May","Jun",
+    "Jul","Aug","Sep","Oct","Nov","Dec"
+  ];
 
+  const [paidMonths, setPaidMonths] = useState<{ [key: string]: any }>({});
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingMonth, setEditingMonth] = useState<PaymentData | null>(null);
-  const [amountInput, setAmountInput] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [amount, setAmount] = useState("");
 
-  // Helper to format date nicely
-  const formatPaymentDate = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  // Load payments
+  useEffect(() => {
+    loadPayments();
+  }, []);
+
+  const loadPayments = async () => {
+    const allPayments = await getPayments();
+    const customerPayments = allPayments[phone] || {};
+    setPaidMonths(customerPayments);
   };
 
-  const openPaymentModal = (monthData: PaymentData) => {
-    setEditingMonth(monthData);
-    setAmountInput(monthData.amount);
+  // Open modal
+  const handlePay = (month: any) => {
+    setSelectedMonth(month);
     setModalVisible(true);
   };
 
-  // Mark as unpaid: clear amount and paidDate
-  const markAsUnpaid = () => {
-    if (!editingMonth) return;
-    setPayments((prev) =>
-      prev.map((p) =>
-        p.month === editingMonth.month
-          ? { ...p, paid: false, amount: "", paidDate: undefined }
-          : p
-      )
-    );
-    setModalVisible(false);
-    setEditingMonth(null);
-    setAmountInput("");
-  };
+  // Confirm payment
+  const confirmPayment = async () => {
+    if (!amount) return;
 
-  // Update amount: keep existing paidDate (don't change)
-  const updateAmount = () => {
-    if (!editingMonth) return;
-    if (!amountInput.trim()) {
-      alert("Please enter an amount");
-      return;
-    }
-    setPayments((prev) =>
-      prev.map((p) =>
-        p.month === editingMonth.month
-          ? { ...p, amount: amountInput, paid: true } // keep original paidDate
-          : p
-      )
-    );
-    setModalVisible(false);
-    setEditingMonth(null);
-    setAmountInput("");
-  };
+    await addPayments(phone, selectedMonth, amount);
+    await loadPayments();
 
-  // Pay for an unpaid month: set current date as paidDate
-  const handlePay = (monthData: PaymentData) => {
-    setEditingMonth(monthData);
-    setAmountInput("");
-    setModalVisible(true);
-  };
-
-  const confirmPayment = () => {
-    if (!editingMonth) return;
-    if (!amountInput.trim()) {
-      alert("Please enter an amount");
-      return;
-    }
-    const now = new Date().toISOString();
-    setPayments((prev) =>
-      prev.map((p) =>
-        p.month === editingMonth.month
-          ? { ...p, paid: true, amount: amountInput, paidDate: now }
-          : p
-      )
-    );
     setModalVisible(false);
-    setEditingMonth(null);
-    setAmountInput("");
+    setAmount("");
   };
 
   return (
     <View style={styles.container}>
+      {/* BACK */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
         <Text style={styles.backArrow}>←</Text>
       </TouchableOpacity>
 
+      {/* CUSTOMER INFO */}
       <View style={styles.card}>
         <Text style={styles.name}>{name}</Text>
         <Text>{phone}</Text>
@@ -133,83 +70,59 @@ export default function CustomerDetail() {
 
       <Text style={styles.section}>Payment History</Text>
 
-      <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
-        {payments.map((item) => {
-          const isPaid = item.paid;
-          return (
-            <View key={item.month} style={styles.paymentCard}>
-              <View style={styles.leftSection}>
-                <Text style={styles.monthText}>{item.month}</Text>
-                {isPaid && item.paidDate && (
-                  <Text style={styles.dateText}>Paid: {formatPaymentDate(item.paidDate)}</Text>
-                )}
-              </View>
+      {/* SCROLL */}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {months.map((month) => {
+          const isPaid = paidMonths[month];
 
-              <View style={styles.rightSection}>
-                {isPaid ? (
-                  <>
-                    <Text style={styles.amountText}>{item.amount} ETB</Text>
-                    <TouchableOpacity
-                      style={styles.editBtn}
-                      onPress={() => openPaymentModal(item)}
-                    >
-                      <Text style={styles.editText}>Edit</Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.payBtn}
-                    onPress={() => handlePay(item)}
-                  >
-                    <Text style={styles.payText}>Pay</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+          return (
+            <View key={month} style={styles.paymentCard}>
+              <Text style={styles.monthText}>{month}</Text>
+
+              {isPaid ? (
+                <Text style={styles.amountText}>
+                  {isPaid.amount} ETB
+                </Text>
+              ) : (
+                <TouchableOpacity
+                  style={styles.payBtn}
+                  onPress={() => handlePay(month)}
+                >
+                  <Text style={styles.payText}>Pay</Text>
+                </TouchableOpacity>
+              )}
             </View>
           );
         })}
       </ScrollView>
 
+      {/* MODAL */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {editingMonth?.paid
-                ? `Edit payment for ${editingMonth?.month}`
-                : `Pay for ${editingMonth?.month}`}
+              Pay for {selectedMonth}
             </Text>
 
-            <Text style={styles.label}>Amount (ETB)</Text>
+            <Text style={styles.label}>Enter Amount (ETB)</Text>
+
             <TextInput
               style={styles.input}
               keyboardType="numeric"
-              value={amountInput}
-              onChangeText={setAmountInput}
+              value={amount}
+              onChangeText={setAmount}
               placeholder="Enter amount"
             />
 
-            {editingMonth?.paid ? (
-              <>
-                <TouchableOpacity style={styles.confirmBtn} onPress={updateAmount}>
-                  <Text style={styles.confirmText}>Update Amount</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.confirmBtn, { backgroundColor: "#dc2626", marginTop: 10 }]}
-                  onPress={markAsUnpaid}
-                >
-                  <Text style={styles.confirmText}>Mark as Unpaid</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <TouchableOpacity style={styles.confirmBtn} onPress={confirmPayment}>
-                <Text style={styles.confirmText}>Confirm Payment</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={styles.confirmBtn}
+              onPress={confirmPayment}
+            >
+              <Text style={styles.confirmText}>Confirm Payment</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={{ marginTop: 15, textAlign: "center", color: "#6b7280" }}>
-                Cancel
-              </Text>
+              <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
