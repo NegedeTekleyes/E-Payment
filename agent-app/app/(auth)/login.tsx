@@ -52,13 +52,11 @@ export default function Login() {
             <Text style={styles.title}>Electric Payment</Text>
             <Text style={styles.subtitle}>Agent Portal</Text>
 
-         <InputField
-          placeholder="Phone Number (10 digits)"
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={(text: any) => setPhone(validatePhone(text))}
-          maxLength={10}
-           />
+       <InputField
+        placeholder="Phone Number"
+        value={phone}
+        onChangeText={(text: any) => setPhone(validatePhone(text))}
+      />
          <InputField 
           placeholder="Password"
           secureTextEntry={true}
