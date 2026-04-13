@@ -3,7 +3,7 @@ import InputField from "@/components/InputField";
 import { COLORS } from "@/constants/colors";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import { loginAgent } from "../../services/authService";
 
 export default function Login() {
@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    marginTop: 30,
     fontWeight: "bold",
     textAlign: "center",
     color: COLORS.textPrimary,

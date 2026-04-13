@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "265420681266",
+    "project_id": "agentapp-b1103",
+    "storage_bucket": "agentapp-b1103.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:265420681266:android:2e883cc11bea5f724b0c2b",
+        "android_client_info": {
+          "package_name": "com.electricpay.agentapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3VzW6asWNjjHMycj61wT8J9AcpEUsrYM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
