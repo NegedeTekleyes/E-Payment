@@ -33,7 +33,7 @@ export default function Dashboard() {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>📋 Dashboard</Text>
+      <Text style={styles.title}> Dashboard</Text>
 
       <Card
         title="➕ Register Customer"
@@ -55,7 +55,7 @@ export default function Dashboard() {
 
       {/* Logout button at bottom */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>🚪 Logout</Text>
+        <Text style={styles.logoutText}> Logout</Text>
       </TouchableOpacity>
     </ScrollView>
   );
