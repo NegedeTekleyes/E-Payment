@@ -6,16 +6,14 @@ import * as Sharing from 'expo-sharing';
 import Button from "../../components/Button";
 import { COLORS } from "../../constants/colors";
 import { useRouter } from "expo-router";
-import { getPayments } from "../../services/paymentService";
+import { db } from "../../services/firbase/config"; 
 import { getCustomers } from "../../services/customerService";
+import { collection, getDocs } from 'firebase/firestore';
 
-// Define types for the data structures
 interface PaymentRecord {
   amount: number;
   date: string;
 }
-
-type PaymentsData = Record<string, Record<string, PaymentRecord>>;
 
 interface Customer {
   firstName: string;
@@ -56,37 +54,33 @@ export default function Export() {
   };
 
   const generateCSV = async (from: Date, to: Date): Promise<string> => {
-    const payments = (await getPayments()) as PaymentsData;
+    // 1. Get all customers
     const customers = (await getCustomers()) as Customer[];
-
-    // Build map of phone -> customer
-    const customerMap: Record<string, Customer> = {};
-    customers.forEach((cust) => {
-      customerMap[cust.phone] = cust;
-    });
+    if (customers.length === 0) return "No customers found.";
 
     const fromStr = toDateOnly(from);
     const toStr = toDateOnly(to);
-
     const rows: ExportRow[] = [];
 
-    for (const [customerId, months] of Object.entries(payments)) {
-      const customer = customerMap[customerId];
-      if (!customer) continue;
-
-      for (const [month, payment] of Object.entries(months)) {
+    // 2. For each customer, fetch their payments subcollection
+    for (const customer of customers) {
+      const paymentsRef = collection(db, 'customers', customer.phone, 'payments');
+      const snapshot = await getDocs(paymentsRef);
+      
+      snapshot.forEach(doc => {
+        const payment = doc.data() as PaymentRecord;
         const paymentDate = payment.date.split("T")[0];
         if (paymentDate >= fromStr && paymentDate <= toStr) {
           rows.push({
             "Customer Name": `${customer.firstName} ${customer.lastName}`,
             "Phone": customer.phone,
             "Account Number": customer.account,
-            "Month": month,
+            "Month": doc.id, // document ID is the month name
             "Amount (ETB)": payment.amount,
             "Payment Date": paymentDate,
           });
         }
-      }
+      });
     }
 
     if (rows.length === 0) {
@@ -117,7 +111,7 @@ export default function Export() {
     setExporting(true);
     try {
       const csvContent = await generateCSV(fromDate, toDate);
-      if (csvContent.startsWith("No payments")) {
+      if (csvContent.startsWith("No")) {
         Alert.alert("No Data", csvContent);
         return;
       }
@@ -125,9 +119,8 @@ export default function Export() {
       const fileName = `payments_${formatDate(fromDate)}_to_${formatDate(toDate)}.csv`;
       const filePath = FileSystem.documentDirectory + fileName;
       await FileSystem.writeAsStringAsync(filePath, csvContent, {
-    encoding: FileSystem.EncodingType.UTF8,
-});
-      
+        encoding: FileSystem.EncodingType.UTF8,
+      });
 
       if (share) {
         if (await Sharing.isAvailableAsync()) {
@@ -224,6 +217,7 @@ export default function Export() {
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
