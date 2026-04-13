@@ -14,6 +14,11 @@ export default function Register() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [account, setAccount] = useState("");
+  
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+  // Success message state
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Validation helpers
   const validatePhone = (text: string) => {
@@ -49,26 +54,53 @@ export default function Register() {
       return;
     }
 
-    // Check if account already exists
-    const exists = await customerExists(accNum);
-    if (exists) {
-      Alert.alert("Duplicate", "An account with this number already exists.");
-      return;
+    setIsLoading(true);
+    setSuccessMessage(""); // clear any previous success message
+
+    try {
+      // Check if account already exists
+      const exists = await customerExists(accNum);
+      if (exists) {
+        Alert.alert("Duplicate", "An account with this number already exists.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Save customer
+      const newCustomer = {
+        firstName: fname,
+        lastName: lname,
+        phone: phoneNum,
+        account: accNum,
+        createdAt: new Date().toISOString(),
+      };
+
+      await addCustomer(newCustomer);
+      
+      // Show success message (inline)
+      setSuccessMessage("✅ Customer registered successfully!");
+      
+      // Clear form fields after successful save (optional)
+      setFirstName("");
+      setLastName("");
+      setPhone("");
+      setAccount("");
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
+      
+      // Also show an alert (optional – you can remove if you only want inline text)
+      Alert.alert("Success", "Customer registered successfully!", [
+        { text: "OK", onPress: () => router.back() }
+      ]);
+    } catch (error: any) {
+      console.error("Save error:", error);
+      Alert.alert("Error", `Failed to save: ${error.message || "Unknown error"}`);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Save customer
-    const newCustomer = {
-      firstName: fname,
-      lastName: lname,
-      phone: phoneNum,
-      account: accNum,
-      createdAt: new Date().toISOString(),
-    };
-
-    await addCustomer(newCustomer);
-    Alert.alert("Success", "Customer registered successfully!", [
-      { text: "OK", onPress: () => router.back() }
-    ]);
   };
 
   return (
@@ -112,13 +144,24 @@ export default function Register() {
       <Text style={styles.label}>Contract Account Number (12 digits)</Text>
       <InputField
         placeholder="e.g., 100001064426"
-        keyboardType="numeric"
+        keyboardType="phone-pad"
         value={account}
         onChangeText={(text: any) => setAccount(validateAccount(text))}
         maxLength={12}
       />
 
-      <Button title="Save Customer" onPress={handleSave} />
+      {/* Success message inline */}
+      {successMessage !== "" && (
+        <View style={styles.successContainer}>
+          <Text style={styles.successText}>{successMessage}</Text>
+        </View>
+      )}
+
+      <Button 
+        title={isLoading ? "Saving..." : "Save Customer"} 
+        onPress={handleSave} 
+        disabled={isLoading}
+      />
     </ScrollView>
   );
 }
@@ -156,5 +199,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5,
     marginTop: 10,
+  },
+  successContainer: {
+    backgroundColor: "#d4edda",
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: "#c3e6cb",
+  },
+  successText: {
+    color: "#155724",
+    fontSize: 14,
+    textAlign: "center",
+    fontWeight: "500",
   },
 });
