@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert } from "react-native";
-import { useState, useEffect } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, RefreshControl } from "react-native";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
 import { COLORS } from "../../constants/colors";
 import { getCustomers, deleteCustomerAndPayments } from "../../services/customerService";
@@ -17,18 +17,27 @@ export default function Search() {
 
   const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    loadCustomers();
-  }, []);
-
+  // Load customers from Firestore
   const loadCustomers = async () => {
     setLoading(true);
     const customers = await getCustomers();
     setAllCustomers(customers);
     setLoading(false);
   };
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadCustomers();
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => {
+    loadCustomers();
+  }, []);
 
   const filteredCustomers = allCustomers.filter((customer) => {
     const query = searchQuery.toLowerCase();
@@ -66,7 +75,7 @@ export default function Search() {
           onPress: async () => {
             try {
               await deleteCustomerAndPayments(account);
-              loadCustomers(); // refresh list
+              loadCustomers(); // refresh list after delete
               Alert.alert("Success", "Customer deleted successfully.");
             } catch (error) {
               console.error(error);
@@ -113,7 +122,7 @@ export default function Search() {
     </View>
   );
 
-  if (loading) {
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
@@ -129,6 +138,10 @@ export default function Search() {
           <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Search Customer</Text>
+        {/* Refresh button */}
+        <TouchableOpacity onPress={loadCustomers} style={styles.refreshButton}>
+          <Text style={styles.refreshIcon}>🔄</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.searchWrapper}>
@@ -151,6 +164,14 @@ export default function Search() {
         data={filteredCustomers}
         keyExtractor={(item, index) => item.account + index}
         renderItem={renderItem}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
@@ -196,6 +217,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: COLORS.textPrimary || "#1f2937",
+    flex: 1, // pushes refresh button to the right
+  },
+  refreshButton: {
+    padding: 8,
+  },
+  refreshIcon: {
+    fontSize: 22,
+    color: COLORS.primary,
   },
   searchWrapper: {
     position: "relative",
