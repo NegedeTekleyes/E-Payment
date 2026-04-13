@@ -7,6 +7,7 @@ interface InputFieldProps {
   onChangeText?: (text: string) => void;
   keyboardType?: "default" | "numeric" | "phone-pad" | "email-address";
   maxLength?: number;
+  editable?: boolean
 }
 
 export default function InputField({
@@ -16,6 +17,7 @@ export default function InputField({
   onChangeText,
   keyboardType,
   maxLength,
+  editable,
 }: InputFieldProps) {
   return (
     <View style={styles.container}>
@@ -27,6 +29,7 @@ export default function InputField({
         keyboardType={keyboardType}
         maxLength={maxLength}
         style={styles.input}
+        editable={editable}
       />
     </View>
   );
