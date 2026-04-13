@@ -1,10 +1,9 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert } from "react-native";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { COLORS } from "../../constants/colors";
-import { getCustomers } from "../../services/customerService"; // adjust path as needed
+import { getCustomers, deleteCustomerAndPayments } from "../../services/customerService";
 
-// Define a Customer type
 interface Customer {
   firstName: string;
   lastName: string;
@@ -20,19 +19,17 @@ export default function Search() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Load customers from storage
   useEffect(() => {
     loadCustomers();
   }, []);
 
   const loadCustomers = async () => {
     setLoading(true);
-    const customers = await getCustomers(); // returns array
+    const customers = await getCustomers();
     setAllCustomers(customers);
     setLoading(false);
   };
 
-  // Filter customers based on search query
   const filteredCustomers = allCustomers.filter((customer) => {
     const query = searchQuery.toLowerCase();
     const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
@@ -43,23 +40,77 @@ export default function Search() {
     );
   });
 
-  const renderItem = ({ item }: { item: Customer }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() =>
-        router.push({
-          pathname: "/customer-detaile", 
-          params: {
-            name: `${item.firstName} ${item.lastName}`,
-            phone: item.phone,
-            account: item.account,
+  // Edit handler
+  const handleEditCustomer = (customer: Customer) => {
+    router.push({
+      pathname: "/edit-customer",
+      params: {
+        account: customer.account,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        phone: customer.phone,
+      },
+    });
+  };
+
+  // Delete handler
+  const handleDeleteCustomer = (account: string, firstName: string, lastName: string) => {
+    Alert.alert(
+      "Delete Customer",
+      `Are you sure you want to delete ${firstName} ${lastName}?\nAll payment records will also be deleted.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteCustomerAndPayments(account);
+              loadCustomers(); // refresh list
+              Alert.alert("Success", "Customer deleted successfully.");
+            } catch (error) {
+              console.error(error);
+              Alert.alert("Error", "Failed to delete customer.");
+            }
           },
-        })
-      }
-    >
-      <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
-      <Text style={styles.details}>{item.phone} • {item.account}</Text>
-    </TouchableOpacity>
+        },
+      ]
+    );
+  };
+
+  const renderItem = ({ item }: { item: Customer }) => (
+    <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.cardContent}
+        onPress={() =>
+          router.push({
+            pathname: "/customer-detaile",
+            params: {
+              name: `${item.firstName} ${item.lastName}`,
+              phone: item.phone,
+              account: item.account,
+            },
+          })
+        }
+      >
+        <Text style={styles.name}>{item.firstName} {item.lastName}</Text>
+        <Text style={styles.details}>{item.phone} • {item.account}</Text>
+      </TouchableOpacity>
+      <View style={styles.cardActions}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => handleEditCustomer(item)}
+        >
+          <Text style={styles.editButtonText}>✏️</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDeleteCustomer(item.account, item.firstName, item.lastName)}
+        >
+          <Text style={styles.deleteButtonText}>🗑️</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 
   if (loading) {
@@ -73,7 +124,6 @@ export default function Search() {
 
   return (
     <View style={styles.container}>
-      {/* Header with back arrow */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backArrow}>←</Text>
@@ -81,7 +131,6 @@ export default function Search() {
         <Text style={styles.title}>Search Customer</Text>
       </View>
 
-      {/* Search input with clear button */}
       <View style={styles.searchWrapper}>
         <TextInput
           style={styles.searchInput}
@@ -98,7 +147,6 @@ export default function Search() {
         )}
       </View>
 
-      {/* Results list */}
       <FlatList
         data={filteredCustomers}
         keyExtractor={(item, index) => item.account + index}
@@ -181,6 +229,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  cardContent: {
+    flex: 1,
   },
   name: {
     fontWeight: "bold",
@@ -191,6 +245,25 @@ const styles = StyleSheet.create({
   details: {
     color: "#6b7280",
     fontSize: 14,
+  },
+  cardActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  editButton: {
+    padding: 6,
+  },
+  editButtonText: {
+    fontSize: 18,
+    color: COLORS.primary,
+  },
+  deleteButton: {
+    padding: 6,
+  },
+  deleteButtonText: {
+    fontSize: 18,
+    color: "red",
   },
   emptyContainer: {
     alignItems: "center",
