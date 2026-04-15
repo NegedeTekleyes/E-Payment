@@ -150,14 +150,23 @@ services/firebase/config.js
 
 ## 📸 Screenshots
 
-* Login Screen
-* Dashboard
-* Register Customer
-* Search Customer
-* Payment Detail
-* Export Payments
+### 🔐 Login Screen
+![Login](assets/screenshots/login.png)
 
-*(Add screenshots here for better presentation)*
+### 📊 Dashboard
+![Dashboard](assets/screenshots/dashboard.png)
+
+### 👤 Register Customer
+![Register](assets/screenshots/register.png)
+
+### 🔍 Search Customer
+![Search](assets/screenshots/search.png)
+
+### 💳 Payment Detail
+![Detail](assets/screenshots/detail.png)
+
+### 📤 Export Payments
+![Export](assets/screenshots/export.png)
 
 
 ---
