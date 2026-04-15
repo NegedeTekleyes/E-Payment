@@ -150,8 +150,11 @@ services/firebase/config.js
 
 ## 📸 Screenshots
 
+---- 🔐 App Screen
+![Home](agent-app\assets/screenshots/home.png)
+
 ---- 🔐 Login Screen
-![Home](assets/screenshots/home.png)
+![Home](assets/screenshots/login.png)
 
 ---- 📊 Dashboard
 ![Dashboard](assets\screenshots\dashboard.png)
@@ -162,8 +165,15 @@ services/firebase/config.js
 ---- 🔍 Search Customer
 ![Search](assets/screenshots/search.png)
 
+---- 🔍 Update Customer
+![Search](assets/screenshots/update.png)
+
 ---- 💳 Payment Detail
 ![Detail](assets/screenshots/detail.png)
+---- 💳 Payment Detail
+![Detail](assets/screenshots/payconf.png)
+---- 💳 Payment Detail
+![Detail](assets/screenshots/paid.png)
 
 ---- 📤 Export Payments
 ![Export](assets/screenshots/export.png)
@@ -186,6 +196,7 @@ This application solves real-world challenges:
 * Fast search
 * Transparent payment history
 * Easy reporting
+* offline support
 
 ---
 
