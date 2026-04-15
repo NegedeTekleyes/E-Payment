@@ -1,50 +1,229 @@
-# Welcome to your Expo app 👋
+#  Electric Payment Agent App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile application designed to digitize and simplify electricity bill collection for agents. This app replaces manual paper-based systems with a fast, reliable, and transparent digital solution.
 
-## Get started
+---
 
-1. Install dependencies
+## 📱 Overview
 
-   ```bash
-   npm install
-   ```
+In many areas, electricity payments are still recorded manually on paper. This leads to:
 
-2. Start the app
+* Slow customer lookup
+* Risk of data loss
+* Lack of transparency
+* Difficult reporting
 
-   ```bash
-   npx expo start
-   ```
+This app solves those problems by providing a **mobile-first digital payment system** for agents.
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🚀 Features (MVP)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 👤 Agent Authentication
 
-## Get a fresh project
+* Secure login using Email & password
 
-When you're ready, run:
+### 👥 Customer Management
 
-```bash
-npm run reset-project
+* Register new customers
+* Store:
+
+  * Full Name
+  * Phone Number
+  * Contract Account Number
+
+### 🔍 Search Customers
+
+* Search by:
+
+  * Name
+  * Phone number
+  * Contract Account number
+
+### 💳 Payment Tracking
+
+* Monthly payment system (Jan → Dec)
+* Record:
+
+  * Paid amount
+  * Payment date
+* Status:
+
+  * Paid / Unpaid
+* Edit incorrect payments
+
+### 📊 Export Reports
+
+* Export payments within date range
+* Generate CSV file
+* Share or download report
+
+### ☁️ Cloud Storage (Firebase)
+
+* Data stored securely in Firestore
+* Real-time and persistent
+
+---
+
+## 🧱 Tech Stack
+
+### 📱 Frontend
+
+* React Native (Expo)
+* TypeScript
+* Expo Router
+
+### ☁️ Backend (Serverless)
+
+* Firebase Firestore
+
+### 📦 Other Tools
+
+* Expo EAS Build (APK generation)
+* AsyncStorage (initial local storage)
+
+---
+
+## 📂 Project Structure
+
+```
+agent-app/
+│
+├── app/                 # Screens (Expo Router)
+│   ├── (auth)/login
+│   ├── dashboard
+│   ├── register
+│   ├── search
+│   ├── customer-detail
+│   └── export
+│
+├── components/          # Reusable UI components
+├── constants/           # Colors, styles
+├── services/            # Firebase + data logic
+│   ├── firebase/
+│   ├── customerService.js
+│   └── paymentService.js
+│
+├── assets/              # Images, icons
+└── eas.json             # Build configuration
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## ⚙️ Installation
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+# Clone the project
+git clone https://github.com/NegedeTekleyes/E-Payment.git
+# Navigate to project
+cd agent-app
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Install dependencies
+npm install
 
-## Join the community
+# Start development server
+npx expo start
+```
 
-Join our community of developers creating universal apps.
+---
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🔥 Build APK
+
+```bash
+eas build --platform android --profile production
+```
+
+---
+
+## 🔐 Firebase Setup
+
+1. Create a Firebase project
+2. Enable Firestore Database (Test Mode)
+3. Add Web App
+4. Copy config into:
+
+```
+services/firebase/config.js
+```
+
+---
+
+## 📸 Screenshots
+
+---- 🔐 Login Screen
+![Home](assets/screenshots/home.png)
+
+---- 📊 Dashboard
+![Dashboard](assets\screenshots\dashboard.png)
+
+👤 Register Customer
+![Register](assets/screenshots/register.png)
+
+---- 🔍 Search Customer
+![Search](assets/screenshots/search.png)
+
+---- 💳 Payment Detail
+![Detail](assets/screenshots/detail.png)
+
+---- 📤 Export Payments
+![Export](assets/screenshots/export.png)
+
+
+---
+
+## 🎯 Problem Solved
+
+This application solves real-world challenges:
+
+* ❌ Manual paper-based tracking
+* ❌ Data loss risk
+* ❌ Time-consuming reporting
+* ❌ Payment disputes
+
+✅ Provides:
+
+* Digital records
+* Fast search
+* Transparent payment history
+* Easy reporting
+
+---
+
+## 🚀 Future Improvements
+
+* Admin dashboard (web)
+* SMS receipt for customers
+* Multi-agent support
+* Analytics dashboard
+
+---
+
+## 👨‍💻 Author
+
+## Negede Tekleyes**
+
+* Full-Stack Developer (React, Next.js, React Native)
+* GitHub: <https://github.com/NegedeTekleyes>
+* LinkedIn: <https://linkedin.com/in/negede-tekleyes>
+
+---
+
+## 💡 Motivation
+
+This project is inspired by real-world challenges in Ethiopia where many services still rely on manual systems. The goal is to build scalable, affordable, and impactful digital solutions.
+
+---
+
+## ⭐ Show Your Support
+
+If you like this project:
+
+* ⭐ Star the repo
+* 🍴 Fork it
+* 📢 Share it
+
+---
+
+## 📄 License
+
+This project is open-source and available under the MIT License.
