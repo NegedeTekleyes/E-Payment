@@ -150,23 +150,33 @@ services/firebase/config.js
 
 ## 📸 Screenshots
 
-### 🔐 Login Screen
-![Login](assets/screenshots/login.png)
+---- 🔐 App Screen
+![Home](agent-app\assets/screenshots/home.png)
 
-### 📊 Dashboard
-![Dashboard](assets/screenshots/dashboard.png)
+---- 🔐 Login Screen
+![Home](agent-app\assets/screenshots/login.png)
 
-### 👤 Register Customer
-![Register](assets/screenshots/register.png)
+---- 📊 Dashboard
+![Dashboard](agent-app\assets\screenshots\dashboard.png)
 
-### 🔍 Search Customer
-![Search](assets/screenshots/search.png)
+👤 Register Customer
+![Register](agent-app\assets/screenshots/register.png)
 
-### 💳 Payment Detail
-![Detail](assets/screenshots/detail.png)
+---- 🔍 Search Customer
+![Search](agent-app\assets/screenshots/search.png)
 
-### 📤 Export Payments
-![Export](assets/screenshots/export.png)
+---- 🔍 Update Customer
+![Search](agent-app\assets/screenshots/update.png)
+
+---- 💳 Payment Detail
+![Detail](agent-app\assets/screenshots/detail.png)
+---- 💳 Payment Detail
+![Detail](agent-app\assets/screenshots/payconf.png)
+---- 💳 Payment Detail
+![Detail](agent-app\assets/screenshots/paid.png)
+
+---- 📤 Export Payments
+![Export](agent-app\assets/screenshots/export.png)
 
 
 ---
@@ -186,6 +196,7 @@ This application solves real-world challenges:
 * Fast search
 * Transparent payment history
 * Easy reporting
+* offline support
 
 ---
 
@@ -200,11 +211,11 @@ This application solves real-world challenges:
 
 ## 👨‍💻 Author
 
-**Negede Tekleyes**
+## Negede Tekleyes**
 
 * Full-Stack Developer (React, Next.js, React Native)
-* GitHub: https://github.com/NegedeTekleyes
-* LinkedIn: https://linkedin.com/in/negede-tekleyes
+* GitHub: <https://github.com/NegedeTekleyes>
+* LinkedIn: <https://linkedin.com/in/negede-tekleyes>
 
 ---
 
